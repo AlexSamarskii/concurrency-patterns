@@ -9,36 +9,31 @@ import (
 
 func doTask(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("Task canceled: %v\n", ctx.Err())
+			fmt.Println("Task canceled:", ctx.Err())
 			return
-		default:
+		case <-ticker.C:
+			// Имитация полезной работы
 			fmt.Println("Performing the task...")
-			select {
-			case <-time.After(1 * time.Second):
-			case <-ctx.Done():
-				fmt.Printf("Task interrupted during work: %v\n", ctx.Err())
-				return
-			}
 		}
 	}
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
+
+	// Контекст с таймаутом 3 секунды
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel() // Освобождаем ресурсы, если таймаут не истёк
 
 	wg.Add(1)
 	go doTask(ctx, &wg)
 
-	time.Sleep(3 * time.Second)
-	fmt.Println("Main: canceling task")
-	cancel()
-
 	wg.Wait()
-
 	fmt.Println("Main goroutine completed")
 }
