@@ -18,7 +18,6 @@ func doTask(ctx context.Context, wg *sync.WaitGroup) {
 			fmt.Println("Task canceled:", ctx.Err())
 			return
 		case <-ticker.C:
-			// Имитация полезной работы
 			fmt.Println("Performing the task...")
 		}
 	}
@@ -27,9 +26,8 @@ func doTask(ctx context.Context, wg *sync.WaitGroup) {
 func main() {
 	var wg sync.WaitGroup
 
-	// Контекст с таймаутом 3 секунды
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel() // Освобождаем ресурсы, если таймаут не истёк
+	defer cancel()
 
 	wg.Add(1)
 	go doTask(ctx, &wg)
